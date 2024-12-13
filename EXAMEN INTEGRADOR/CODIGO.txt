@@ -1,0 +1,64 @@
+#define LED_ROJO 2
+#define LED_AMARILLO 3
+#define LED_VERDE 4
+#define LED_AZUL 5
+#define BUZZER 6
+#define TRIG_PIN 7
+#define ECHO_PIN 8
+
+int distancias[] = {20, 30, 40, 50};
+int leds[] = {LED_ROJO, LED_AMARILLO, LED_VERDE, LED_AZUL};
+
+void setup() {
+  pinMode(LED_ROJO, OUTPUT);
+  pinMode(LED_AMARILLO, OUTPUT);
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_AZUL, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  int distancia = medirDistancia();
+  Serial.print("Distancia: ");
+  Serial.println(distancia);
+
+  bool encendioLED = false;
+  for (int i = 0; i < 4; i++) {
+    if (distancia < distancias[i]) {
+      apagarTodosLEDs();
+      digitalWrite(leds[i], HIGH);
+      encendioLED = true;
+      break;
+    }
+  }
+
+  if (!encendioLED) {
+    apagarTodosLEDs();
+    tone(BUZZER, 440, 500);
+  }
+
+  delay(100);
+}
+
+int medirDistancia() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  int duracion = pulseIn(ECHO_PIN, HIGH, 30000);
+  if (duracion == 0) return 999;
+  return duracion * 0.034 / 2;
+}
+
+void apagarTodosLEDs() {
+  digitalWrite(LED_ROJO, LOW);
+  digitalWrite(LED_AMARILLO, LOW);
+  digitalWrite(LED_VERDE, LOW);
+  digitalWrite(LED_AZUL, LOW);
+}
